@@ -19,9 +19,12 @@ La imagen `ra3se/q3ra3-server:latest` ya incluye el mod y los mapas de Rocket Ar
 ## Pasos (local)
 
 ```bash
-# Crear carpeta remota y subir archivos
+# Crear carpeta remota y clonar repo
 ssh ubuntu@vps.krisenigma.com "mkdir -p ~/ra3-server"
-scp pak0.pk3 server.cfg arena.cfg docker-compose.yml ubuntu@vps.krisenigma.com:~/ra3-server/
+ssh ubuntu@vps.krisenigma.com "git clone https://github.com/KrisEnigma/quake3-ra3-server.git ~/ra3-server"
+
+# Si el repo usa Git LFS (pak0.pk3):
+ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && git lfs install && git lfs pull"
 
 # Levantar el servidor
 ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose up -d"
@@ -47,8 +50,7 @@ ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose restart"
 ## Actualizar archivos y reiniciar
 
 ```bash
-scp server.cfg arena.cfg docker-compose.yml ubuntu@vps.krisenigma.com:~/ra3-server/ && \
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose restart"
+ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && git pull && git lfs pull && sudo docker compose restart"
 ```
 
 ## Qué va en `docker-compose.yml` vs `server.cfg`
