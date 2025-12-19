@@ -90,6 +90,7 @@ fi
 Copia y pega todo el bloque siguiente en la terminal ya conectada por SSH (desde el usuario que vaya a administrar el servidor):
 
 ```bash
+# Primera vez (repo nuevo)
 # Crear carpeta del repo y entrar
 mkdir -p ~/q3-servers
 cd ~/q3-servers
@@ -104,6 +105,16 @@ git lfs pull --include="pak0.pk3" || true
 
 # Levantar contenedores
 sudo docker compose up -d
+```
+
+## Actualizar (repo ya clonado)
+
+```bash
+cd ~/q3-servers
+git sparse-checkout init --no-cone
+git sparse-checkout set /docker-compose.yml /ra3-server.cfg /arena.cfg /osp-ffa.cfg /osp-instagib.cfg
+git pull --ff-only
+sudo docker compose restart
 ```
 
 ## Verificar
@@ -137,17 +148,3 @@ En `docker-compose.yml` van cvars de arranque:
 
 En `ra3-server.cfg` van cvars de gameplay y servidor:
 - `sv_hostname`, `g_motd`, `sv_fps`, `sv_maxclients`, `sv_maxRate`, etc.
-
-## Descargas (sv_dlURL)
-
-Para acelerar descargas de mods, usa `sv_dlURL` apuntando a un CDN HTTP.
-Ejemplo:
-
-```cfg
-seta sv_allowDownload "1"
-seta sv_dlURL "https://q3.krisenigma.com/q3"
-```
-
-La estructura del CDN debe ser:
-- `/arena/...` (RA3)
-- `/osp/...` (OSP)
