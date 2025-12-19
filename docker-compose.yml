@@ -14,7 +14,7 @@ services:
   osp-ffa:
     container_name: osp-ffa
     image: wokoman/quake3-osp-server
-    platform: linux/386
+    platform: linux/amd64
     restart: always
     ports:
       - "27961:27960/udp"
@@ -25,7 +25,7 @@ services:
   osp-instagib:
     container_name: osp-instagib
     image: wokoman/quake3-osp-server
-    platform: linux/386
+    platform: linux/amd64
     restart: always
     ports:
       - "27962:27960/udp"
