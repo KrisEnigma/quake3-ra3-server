@@ -1,13 +1,35 @@
 services:
-  q3ra3:
-    container_name: ra3-server
+  ra3:
+    container_name: ra3
     image: ra3se/q3ra3-server:latest
     platform: linux/386
     restart: always
     ports:
       - "27960:27960/udp"
     volumes:
-      - "/home/ubuntu/ra3-server/pak0.pk3:/quake3/baseq3/pak0.pk3:ro"
-      - "/home/ubuntu/ra3-server/server.cfg:/quake3/arena/server.cfg:ro"
-      - "/home/ubuntu/ra3-server/arena.cfg:/quake3/arena/arena.cfg:ro"
-    command: ["/bin/sh", "-c", "/quake3/quake3e.ded +set fs_game arena +set net_port 27960 +set vm_game 0 +set sv_pure 0 +set bot_enable 0 +set dedicated 2 +set com_hunkmegs 64 +exec server.cfg +map ra3map10"]
+      - "/home/ubuntu/q3-servers/pak0.pk3:/quake3/baseq3/pak0.pk3:ro"
+      - "/home/ubuntu/q3-servers/ra3-server.cfg:/quake3/arena/ra3-server.cfg:ro"
+      - "/home/ubuntu/q3-servers/arena.cfg:/quake3/arena/arena.cfg:ro"
+    command: ["/bin/sh", "-c", "/quake3/quake3e.ded +set fs_game arena +set net_port 27960 +set vm_game 0 +set sv_pure 0 +set bot_enable 0 +set dedicated 2 +set com_hunkmegs 64 +exec ra3-server.cfg +map ra3map10"]
+  osp-ffa:
+    container_name: osp-ffa
+    image: wokoman/quake3-osp-server
+    platform: linux/386
+    restart: always
+    ports:
+      - "27961:27960/udp"
+    volumes:
+      - "/home/ubuntu/q3-servers/pak0.pk3:/usr/share/games/quake3/baseq3/pak0.pk3:ro"
+      - "/home/ubuntu/q3-servers/osp-ffa.cfg:/usr/share/games/quake3/osp/osp-ffa.cfg:ro"
+    command: ["+set", "fs_game", "osp", "+set", "net_port", "27960", "+set", "dedicated", "2", "+set", "com_hunkmegs", "64", "+exec", "osp-ffa.cfg"]
+  osp-instagib:
+    container_name: osp-instagib
+    image: wokoman/quake3-osp-server
+    platform: linux/386
+    restart: always
+    ports:
+      - "27962:27960/udp"
+    volumes:
+      - "/home/ubuntu/q3-servers/pak0.pk3:/usr/share/games/quake3/baseq3/pak0.pk3:ro"
+      - "/home/ubuntu/q3-servers/osp-instagib.cfg:/usr/share/games/quake3/osp/osp-instagib.cfg:ro"
+    command: ["+set", "fs_game", "osp", "+set", "net_port", "27960", "+set", "dedicated", "2", "+set", "com_hunkmegs", "64", "+exec", "osp-instagib.cfg"]

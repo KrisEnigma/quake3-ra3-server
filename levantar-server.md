@@ -10,8 +10,10 @@ Guía corta para levantar el server en el VPS usando la imagen oficial de RA3.
 ## Archivos locales necesarios
 
 - `pak0.pk3`
-- `server.cfg`
+- `ra3-server.cfg`
 - `arena.cfg`
+- `osp-ffa.cfg` (solo OSP)
+- `osp-instagib.cfg` (solo OSP)
 - `docker-compose.yml`
 
 La imagen `ra3se/q3ra3-server:latest` ya incluye el mod y los mapas de Rocket Arena 3.
@@ -89,13 +91,13 @@ Copia y pega todo el bloque siguiente en la terminal ya conectada por SSH (desde
 
 ```bash
 # Crear carpeta del repo y entrar
-mkdir -p ~/ra3-server
-cd ~/ra3-server
+mkdir -p ~/q3-servers
+cd ~/q3-servers
 
 # Clonar repo con sparse checkout (solo archivos necesarios)
 git clone --filter=blob:none --sparse https://github.com/KrisEnigma/quake3-ra3-server.git .
 git sparse-checkout init --no-cone
-git sparse-checkout set /docker-compose.yml /server.cfg /arena.cfg /pak0.pk3
+git sparse-checkout set /docker-compose.yml /ra3-server.cfg /arena.cfg /osp-ffa.cfg /osp-instagib.cfg /pak0.pk3
 
 # Bajar objetos LFS (pak0.pk3 si está en LFS)
 git lfs pull --include="pak0.pk3" || true
@@ -107,7 +109,7 @@ sudo docker compose up -d
 ## Verificar
 
 ```bash
-cd ~/ra3-server && sudo docker compose ps && sudo docker compose logs --tail=120
+cd ~/q3-servers && sudo docker compose ps && sudo docker compose logs --tail=120
 ```
 
 Logs esperados:
@@ -118,20 +120,20 @@ Logs esperados:
 ## Reiniciar si cambias config
 
 ```bash
-cd ~/ra3-server && sudo docker compose restart
+cd ~/q3-servers && sudo docker compose restart
 ```
 
 ## Actualizar archivos y reiniciar
 
 ```bash
-cd ~/ra3-server && git pull && git lfs pull && sudo docker compose restart
+cd ~/q3-servers && git pull && git lfs pull && sudo docker compose restart
 ```
 
-## docker-compose vs server.cfg
+## docker-compose vs ra3-server.cfg
 
 En `docker-compose.yml` van cvars de arranque:
 - `fs_game`, `net_port`, `vm_game`, `sv_pure`, `bot_enable`, `dedicated`
 - `com_hunkmegs` (solo se lee al inicio)
 
-En `server.cfg` van cvars de gameplay y servidor:
+En `ra3-server.cfg` van cvars de gameplay y servidor:
 - `sv_hostname`, `g_motd`, `sv_fps`, `sv_maxclients`, `sv_maxRate`, etc.
