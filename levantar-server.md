@@ -137,3 +137,17 @@ En `docker-compose.yml` van cvars de arranque:
 
 En `ra3-server.cfg` van cvars de gameplay y servidor:
 - `sv_hostname`, `g_motd`, `sv_fps`, `sv_maxclients`, `sv_maxRate`, etc.
+
+## Descargas (sv_dlURL)
+
+Para acelerar descargas de mods, usa `sv_dlURL` apuntando a un CDN HTTP.
+Ejemplo:
+
+```cfg
+seta sv_allowDownload "1"
+seta sv_dlURL "https://q3.krisenigma.com/q3"
+```
+
+La estructura del CDN debe ser:
+- `/arena/...` (RA3)
+- `/osp/...` (OSP)
