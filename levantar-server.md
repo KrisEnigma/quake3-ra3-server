@@ -1,4 +1,4 @@
-# Levantar Rocket Arena 3 en el VPS
+﻿# Levantar Rocket Arena 3 en el VPS
 
 Guía corta para levantar el server en el VPS usando la imagen oficial de RA3.
 
@@ -16,24 +16,98 @@ Guía corta para levantar el server en el VPS usando la imagen oficial de RA3.
 
 La imagen `ra3se/q3ra3-server:latest` ya incluye el mod y los mapas de Rocket Arena 3.
 
-## Pasos (local)
+## Verificar dependencias
 
 ```bash
-# Crear carpeta remota y clonar repo
-ssh ubuntu@vps.krisenigma.com "mkdir -p ~/ra3-server"
-ssh ubuntu@vps.krisenigma.com "git clone https://github.com/KrisEnigma/quake3-ra3-server.git ~/ra3-server"
+# Binarios requeridos
+command -v docker
+docker compose version
+command -v git
+command -v git-lfs
+command -v qemu-i386-static
 
-# Si el repo usa Git LFS (pak0.pk3):
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && git lfs install && git lfs pull"
+# Paquetes requeridos (Ubuntu)
+dpkg -s docker-ce docker-ce-cli containerd.io docker-compose-plugin git git-lfs qemu-user-static >/dev/null
 
-# Levantar el servidor
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose up -d"
+# Binfmt registrado para 386 (sin descargar imágenes)
+if [ -f /proc/sys/fs/binfmt_misc/qemu-i386 ]; then
+	head -n 1 /proc/sys/fs/binfmt_misc/qemu-i386
+else
+	echo "binfmt_misc qemu-i386 no registrado" >&2
+fi
+```
+
+## Instalar dependencias
+
+Si falta algo en la verificación anterior, pega estas líneas en una sesión SSH (Ubuntu):
+
+```bash
+# Solo lo necesario (ARM64 + linux/386 + LFS)
+
+needs_apt=0
+for bin in docker git-lfs qemu-i386-static; do
+	if ! command -v "$bin" >/dev/null 2>&1; then
+		needs_apt=1
+		break
+	fi
+done
+
+if [ "$needs_apt" -eq 1 ]; then
+	sudo apt update
+fi
+
+# Docker + Compose (solo si faltan)
+if ! command -v docker >/dev/null 2>&1; then
+	sudo apt install -y ca-certificates curl gnupg lsb-release
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+	sudo apt update
+	sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+fi
+
+# Git LFS (pak0.pk3 en LFS)
+if ! command -v git-lfs >/dev/null 2>&1; then
+	sudo apt install -y git-lfs
+	git lfs install --system
+fi
+
+# QEMU i386 (solo si falta)
+if ! command -v qemu-i386-static >/dev/null 2>&1; then
+	sudo apt install -y qemu-user-static
+fi
+
+# Binfmt para 386 (solo si no está registrado)
+if [ ! -f /proc/sys/fs/binfmt_misc/qemu-i386 ]; then
+	sudo docker run --privileged --rm tonistiigi/binfmt --install 386
+fi
+```
+
+
+## Comandos SSH
+
+Copia y pega todo el bloque siguiente en la terminal ya conectada por SSH (desde el usuario que vaya a administrar el servidor):
+
+```bash
+# Crear carpeta del repo y entrar
+mkdir -p ~/ra3-server
+cd ~/ra3-server
+
+# Clonar repo con sparse checkout (solo archivos necesarios)
+git clone --filter=blob:none --sparse https://github.com/KrisEnigma/quake3-ra3-server.git .
+git sparse-checkout init --no-cone
+git sparse-checkout set /docker-compose.yml /server.cfg /arena.cfg /pak0.pk3
+
+# Bajar objetos LFS (pak0.pk3 si está en LFS)
+git lfs pull --include="pak0.pk3" || true
+
+# Levantar contenedores
+sudo docker compose up -d
 ```
 
 ## Verificar
 
 ```bash
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose ps && sudo docker compose logs --tail=120"
+cd ~/ra3-server && sudo docker compose ps && sudo docker compose logs --tail=120
 ```
 
 Logs esperados:
@@ -44,16 +118,16 @@ Logs esperados:
 ## Reiniciar si cambias config
 
 ```bash
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && sudo docker compose restart"
+cd ~/ra3-server && sudo docker compose restart
 ```
 
 ## Actualizar archivos y reiniciar
 
 ```bash
-ssh ubuntu@vps.krisenigma.com "cd ~/ra3-server && git pull && git lfs pull && sudo docker compose restart"
+cd ~/ra3-server && git pull && git lfs pull && sudo docker compose restart
 ```
 
-## Qué va en `docker-compose.yml` vs `server.cfg`
+## docker-compose vs server.cfg
 
 En `docker-compose.yml` van cvars de arranque:
 - `fs_game`, `net_port`, `vm_game`, `sv_pure`, `bot_enable`, `dedicated`
