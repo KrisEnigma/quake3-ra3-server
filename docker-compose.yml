@@ -1,0 +1,13 @@
+services:
+  q3ra3:
+    container_name: ra3-server
+    image: ra3se/q3ra3-server:latest
+    platform: linux/386
+    restart: always
+    ports:
+      - "27960:27960/udp"
+    volumes:
+      - "/home/ubuntu/ra3-server/pak0.pk3:/quake3/baseq3/pak0.pk3:ro"
+      - "/home/ubuntu/ra3-server/server.cfg:/quake3/arena/server.cfg:ro"
+      - "/home/ubuntu/ra3-server/arena.cfg:/quake3/arena/arena.cfg:ro"
+    command: ["/bin/sh", "-c", "/quake3/quake3e.ded +set fs_game arena +set net_port 27960 +set vm_game 0 +set sv_pure 0 +set bot_enable 0 +set dedicated 2 +set com_hunkmegs 64 +exec server.cfg +map ra3map10"]
